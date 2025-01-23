@@ -48,7 +48,7 @@ def get_db_connection():
         print(f"Error connecting to MySQL: {e}")
         raise HTTPException(status_code=500, detail="Database connection error")
     return None
-
+ 
 @app.get("/hello")
 async def hello():
     return {"message": "Hello, World!"}
