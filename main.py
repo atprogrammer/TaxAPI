@@ -54,7 +54,7 @@ async def hello():
     return {"message": "Hello, World!"}
 
 
-@app.get("/api/db-status")
+@app.get("/api/db-status") 
 async def check_db_connection():
     """
     ตรวจสอบสถานะการเชื่อมต่อกับฐานข้อมูล
