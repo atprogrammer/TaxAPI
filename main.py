@@ -58,6 +58,7 @@ async def hello():
 async def check_db_connection():
     """
     ตรวจสอบสถานะการเชื่อมต่อกับฐานข้อมูล
+    
     """
     connection = None
     try:
