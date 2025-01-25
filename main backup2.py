@@ -108,70 +108,43 @@ async def check_db_connection():
 #             cursor.close()  # ปิด cursor
 #             connection.close()  # ปิด connection
 
-@app.post("/api/admin/signIn")
-async def admin_sign_in(user: SignInRequest):
-    """
-    API สำหรับล็อกอินผู้ใช้ admin
-    """
-    connection = get_db_connection()
-    try:
-        cursor = connection.cursor(dictionary=True)
-        query = """
-            SELECT name, username, level
-            FROM admin
-            WHERE username = %s AND password = %s AND level = 'admin'
-        """
-        cursor.execute(query, (user.username, user.password))
-        admin_data = cursor.fetchall()
-
-        if not admin_data:  # กรณีไม่มีข้อมูล
-            raise HTTPException(status_code=401, detail="Invalid admin username or password")
-        
-        # กรณีมีข้อมูล
+@app.post("/api/user/signIn")
+async def sign_in(user: SignInRequest):
+    # ตรวจสอบว่าผู้ใช้คือ admin หรือไม่
+    if user.username == "admin" and user.password == "admin":
         return {
             "token": "mock_token_admin",  # จำลอง Token สำหรับ admin
-            "id": admin_data[0]["username"],  # ใช้แถวแรก
-            "name": admin_data[0]["name"],  # ใช้แถวแรก
-            "level": admin_data[0]["level"],  # ระดับ admin
+            "id": "admin",  # ค่า id สำหรับ admin
+            "name": "Administrator",  # ชื่อสำหรับ admin
+            "level": "admin"  # ระดับ admin
         }
-    except Error as e:  # จับข้อผิดพลาดฐานข้อมูลโดยเฉพาะ
-        print(f"Error querying MySQL: {e}")
-        raise HTTPException(status_code=500, detail="Database query error")
-    finally:
-        if connection.is_connected():
-            cursor.close()  # ปิด cursor
-            connection.close()  # ปิด connection
 
-
-
-@app.post("/api/user/signIn")
-async def user_sign_in(user: SignInRequest):
-    """
-    API สำหรับล็อกอินผู้ใช้ทั่วไป
-    """
+    # หากไม่ใช่ admin ให้คิวรีฐานข้อมูล
     connection = get_db_connection()
     try:
+        print(f"Username: {user.username}, Password: {user.password}")
         cursor = connection.cursor(dictionary=True)
         query = """
-            SELECT name, username, level
-            FROM users
-            WHERE username = %s AND password = %s AND level = 'user'
+            SELECT name, username,level
+            FROM users 
+            WHERE username = %s AND password = %s
         """
         cursor.execute(query, (user.username, user.password))
-        user_data = cursor.fetchall()
-
-        if not user_data:  # กรณีไม่มีข้อมูล
-            raise HTTPException(status_code=401, detail="Invalid username or password")
         
-        # กรณีมีข้อมูล
-        return {
-            "token": "mock_token_user",  # จำลอง Token สำหรับ user
-            "id": user_data[0]["username"],  # ใช้แถวแรก
-            "name": user_data[0]["name"],  # ใช้แถวแรก
-            "level": user_data[0]["level"],  # ระดับ user
-        }
-    except Error as e:  # จับข้อผิดพลาดฐานข้อมูลโดยเฉพาะ
-        print(f"Database error: {e}")
+        user_data = cursor.fetchall()
+        
+        if user_data:
+            print(f"Query Result: {user_data}")
+            return {
+                "token": "mock_token_12345",  # จำลอง Token
+                "id": user_data[0]["username"],  # ใช้แถวแรก
+                "name": user_data[0]["name"],  # ใช้แถวแรก
+                "level": user_data[0]["level"]  # ระดับ user
+            }
+        else:
+            raise HTTPException(status_code=401, detail="Invalid username or password")
+    except Exception as e:
+        print(f"Error querying MySQL: {e}")
         raise HTTPException(status_code=500, detail="Database query error")
     finally:
         if connection.is_connected():
